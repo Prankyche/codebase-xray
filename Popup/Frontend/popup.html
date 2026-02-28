@@ -1,0 +1,195 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 350px;
+      padding: 20px;
+      font-family: Arial;
+      background: #121212;
+      color: white;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background: #3a86ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    pre {
+      margin-top: 15px;
+      background: #1e1e1e;
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🧠 Codebase X-Ray</h2>
+
+<input type="text" id="repo" placeholder="https://github.com/user/repo"/>
+<button id="analyze">Analyze</button>
+<button id="openPageBtn" class="secondary">
+  View Detailed Report →
+</button>
+
+<pre id="output"></pre>
+
+<script src="popup.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Codebase X-Ray</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      width: 380px;
+      padding: 20px;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+    }
+
+    h2 {
+      margin: 0 0 15px 0;
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      color: #38bdf8;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: white;
+      outline: none;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #38bdf8;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-size: 14px;
+    }
+
+    .primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .primary:hover {
+      background: #2563eb;
+    }
+
+    .secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+
+    .secondary:hover {
+      background: #475569;
+    }
+
+    .card {
+      margin-top: 15px;
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .metadata {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    .meta-item {
+      background: #0f172a;
+      padding: 6px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 12px;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .loading {
+      text-align: center;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Codebase X-Ray</h2>
+
+  <div class="input-group">
+    <input type="text" id="repo" placeholder="https://github.com/user/repo" />
+  </div>
+
+  <button id="analyze" class="primary">Analyze Repository</button>
+  <button id="openPageBtn" class="secondary">View Detailed Report →</button>
+
+  <div id="githubMeta" class="card" style="display:none;">
+    <strong>Repository Stats</strong>
+    <div class="metadata">
+      <div class="meta-item" id="stars">Stars</div>
+      <div class="meta-item" id="forks">Forks</div>
+      <div class="meta-item" id="language">Language</div>
+      <div class="meta-item" id="issues">Issues</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <strong>AI Summary</strong>
+    <div id="output" class="loading">Enter a repository URL to begin analysis.</div>
+  </div>
+
+  <script src="popup.js"></script>
+
+</body>
+</html>

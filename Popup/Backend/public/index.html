@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Codebase X-Ray</title>
+    <style>
+        body { background:#121212; color:white; font-family:Arial; padding:40px;}
+        button { padding:10px 20px; margin-top:10px;}
+        input { padding:8px; width:400px;}
+        pre { background:#1e1e1e; padding:20px; margin-top:20px; white-space: pre-wrap;}
+    </style>
+</head>
+<body>
+
+<h1>🧠 Codebase X-Ray</h1>
+
+<h3>Upload ZIP</h3>
+<input type="file" id="zipfile"/>
+<button onclick="uploadZip()">Analyze</button>
+
+<h3>OR GitHub Repo</h3>
+<input type="text" id="repo" placeholder="https://github.com/user/repo"/>
+<button onclick="analyzeGithub()">Analyze</button>
+
+<pre id="output"></pre>
+
+<script>
+async function uploadZip() {
+    const file = document.getElementById('zipfile').files[0];
+    if (!file) return alert("Select a ZIP file first.");
+
+    const formData = new FormData();
+    formData.append('zipfile', file);
+
+    const res = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await res.json();
+    display(data);
+}
+
+async function analyzeGithub() {
+    const repo = document.getElementById('repo').value;
+    if (!repo) return alert("Enter GitHub repo URL.");
+
+    const res = await fetch('/github', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ repo })
+    });
+
+    const data = await res.json();
+    display(data);
+}
+
+const fs = require('fs');
+const path = require('path');
+
+function analyzeProject(rootPath) {
+
+    const structure = {
+        files: [],
+        routes: [],
+        services: [],
+        models: [],
+        controllers: [],
+        entryPoints: [],
+        dbFiles: [],
+        frameworks: new Set(),
+        flow: []
+    };
+
+    function walk(dir) {
+        fs.readdirSync(dir).forEach(file => {
+            const fullPath = path.join(dir, file);
+            const stat = fs.statSync(fullPath);
+
+            if (stat.isDirectory() &&
+                file !== 'node_modules' &&
+                file !== '.git' &&
+                file !== 'dist'
+            ) {
+                walk(fullPath);
+            } else if (stat.isFile()) {
+
+                structure.files.push(fullPath);
+                const lower = file.toLowerCase();
+
+                // Entry detection
+                if (
+                    lower === 'server.js' ||
+                    lower === 'app.js' ||
+                    lower === 'main.py' ||
+                    lower === 'index.js'
+                ) {
+                    structure.entryPoints.push(file);
+                }
+
+                if (lower.includes('route'))
+                    structure.routes.push(file);
+
+                if (lower.includes('service'))
+                    structure.services.push(file);
+
+                if (lower.includes('controller'))
+                    structure.controllers.push(file);
+
+                if (lower.includes('model'))
+                    structure.models.push(file);
+
+                if (lower.includes('db'))
+                    structure.dbFiles.push(file);
+
+                const content = fs.readFileSync(fullPath, 'utf-8');
+
+                if (content.includes('express'))
+                    structure.frameworks.add('Express');
+
+                if (content.includes('Flask'))
+                    structure.frameworks.add('Flask');
+
+                if (content.includes('app.listen'))
+                    structure.flow.push(`Server starts in ${file}`);
+
+                if (content.includes('router.get') || content.includes('app.get'))
+                    structure.flow.push(`HTTP route defined in ${file}`);
+            }
+        });
+    }
+
+    walk(rootPath);
+
+    const architecture = detectArchitecture(structure);
+
+    const onboardingGuide = generateOnboarding(structure);
+
+    const flowDiagram = generateFlowDiagram(structure);
+
+    return {
+        architecture,
+        frameworks: [...structure.frameworks],
+        structure,
+        onboardingGuide,
+        flowDiagram
+    };
+}
+
+function detectArchitecture(s) {
+
+    if (s.routes.length && s.services.length && s.models.length)
+        return "Layered MVC Architecture";
+
+    if (s.routes.length && s.services.length)
+        return "Layered Express API";
+
+    if (s.dbFiles.length)
+        return "Monolithic API with Direct DB Access";
+
+    return "Basic Monolithic Application";
+}
+
+function generateOnboarding(s) {
+
+    return {
+        startHere: s.entryPoints.length ? s.entryPoints[0] : "No clear entry file detected",
+        modifyAPI: s.routes.length ? s.routes[0] : "No route layer found",
+        businessLogic: s.services.length ? s.services[0] : "Service layer not separated",
+        database: s.dbFiles.length ? s.dbFiles[0] : "Database module not clearly separated"
+    };
+}
+
+function generateFlowDiagram(s) {
+
+    return `
+graph TD
+    Client --> Routes
+    Routes --> Controllers
+    Controllers --> Services
+    Services --> Models
+    Models --> Database
+`;
+}
+
+module.exports = { analyzeProject };
+
+    document.getElementById('output').innerText =
+        "Architecture: " + data.architecture + "\n\n" +
+        "Frameworks: " + data.frameworks.join(", ") + "\n\n" +
+        "Entry Points: " + data.entryPoints.join(", ") + "\n\n" +
+        "Execution Flow:\n" + data.flow.join("\n");
+
+</script>
+
+</body>
+</html>
